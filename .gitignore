@@ -1,0 +1,26 @@
+# ⚠️ 저장소가 퍼블릭이다. 비밀값이 절대 올라가지 않게 한다.
+.env
+.env.*
+!.env.example
+*.key
+secrets.*
+
+# 수집 데이터 — 용량이 크고 재생성 가능하다
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# 파이썬
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Playwright
+.playwright/
+
+# OS
+Thumbs.db
+.DS_Store

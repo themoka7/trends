@@ -1,0 +1,113 @@
+name: 일일 수집 · 분석 · 배포
+
+on:
+  schedule:
+    # UTC 17:00 = KST 02:00
+    - cron: "0 17 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "수집 대상일 (yyyymmdd, 비우면 어제)"
+        required: false
+      skip_collect:
+        description: "수집 건너뛰고 분석·배포만"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - ".github/workflows/daily.yml"
+
+# 겹쳐 돌면 요청이 두 배가 되고 차단 위험이 커진다.
+concurrency:
+  group: pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # data/feed.json 커밋
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 파이썬 의존성
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      # DB는 저장소에 두지 않는다(.gitignore). 직전 실행분을 캐시에서 되살린다.
+      - name: 수집 DB 복원
+        uses: actions/cache@v4
+        with:
+          path: data
+          key: signals-db-${{ github.run_id }}
+          restore-keys: signals-db-
+
+      - name: 수집 + 신호 탐지
+        if: ${{ github.event_name != 'push' && !inputs.skip_collect }}
+        run: |
+          python -m collector.pipeline ${{ inputs.date && format('--date {0}', inputs.date) || '' }}
+
+      - name: AI 해석
+        if: ${{ github.event_name != 'push' }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::warning::GEMINI_API_KEY 미설정 — AI 해석을 건너뛴다"
+            exit 0
+          fi
+          python -m collector.summarize
+          python -m collector.brief
+
+      - name: 웹사이트용 JSON 내보내기
+        run: python -m collector.export
+
+      - name: feed.json 커밋
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f web/public/feed.json
+          git diff --staged --quiet || git commit -m "data: feed 갱신 $(date -u +%Y-%m-%d)"
+          git push || echo "푸시할 변경 없음"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: 사이트 빌드
+        working-directory: web
+        env:
+          # 프로젝트 저장소면 /저장소이름 이 basePath 가 된다.
+          # 유저.github.io 저장소라면 빈 값이어야 한다.
+          NEXT_PUBLIC_BASE_PATH: ${{ endsWith(github.repository, '.github.io') && '' || format('/{0}', github.event.repository.name) }}
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
