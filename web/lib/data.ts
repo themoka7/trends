@@ -63,6 +63,8 @@ export type Stats = {
   kept: number;
   from: string;
   to: string;
+  /** 일자별 추이. 주말이 꺼지는 모양 자체가 정보다. */
+  daily?: { date: string; scanned: number; kept: number }[];
 };
 
 const data = feed as unknown as {

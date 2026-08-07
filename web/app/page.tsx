@@ -1,116 +1,121 @@
 import { brief, fmtDate, rankedSignals, stats } from "@/lib/data";
-import { SignalCard } from "./components";
+import { SignalRow, Trend } from "./components";
 
 export default function Home() {
   const watch = new Set(brief?.watch ?? []);
   const notable = rankedSignals.filter((s) => !s.ai?.routine);
   const routine = rankedSignals.filter((s) => s.ai?.routine);
+  const keepRate = stats.scanned ? (stats.kept / stats.scanned) * 100 : 0;
 
   return (
     <>
-      {/* ── 1장짜리 리포트 헤더 ─────────────────────────────── */}
-      <section className="mb-10">
-        <p className="font-mono text-xs text-stone-500 dark:text-stone-400">
-          {stats.from && `${fmtDate(stats.from)}~${fmtDate(stats.to)}`} ·{" "}
-          중앙행정기관
+      <p className="eyebrow">
+        {stats.from && `${fmtDate(stats.from)}–${fmtDate(stats.to)}`} · 중앙행정기관
+        · {stats.days}일
+      </p>
+
+      <h1 className="headline">
+        {brief?.headline ?? "정책 동향 리포트"}
+      </h1>
+
+      {brief ? (
+        <p className="lead reading">{brief.overview}</p>
+      ) : (
+        <p className="lead reading">
+          아직 종합 리포트가 없습니다.{" "}
+          <code>python -m collector.brief</code>
         </p>
+      )}
 
-        {brief ? (
-          <>
-            <h1 className="mt-2 text-2xl font-semibold leading-snug tracking-tight sm:text-[28px]">
-              {brief.headline}
-            </h1>
-            <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-stone-700 dark:text-stone-300">
-              {brief.overview}
-            </p>
-          </>
-        ) : (
-          <>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-              정책 동향 리포트
-            </h1>
-            <p className="mt-3 text-sm text-stone-500">
-              아직 종합 리포트가 없습니다.{" "}
-              <code className="font-mono text-xs">
-                python -m collector.brief
-              </code>
-            </p>
-          </>
-        )}
+      <dl className="metrics">
+        <div className="metric">
+          <dt>수집 문서</dt>
+          <dd>
+            {stats.scanned.toLocaleString()}
+            <small>건</small>
+          </dd>
+        </div>
+        <div className="metric">
+          <dt>분석 대상</dt>
+          <dd>
+            {stats.kept.toLocaleString()}
+            <small>건 · {keepRate.toFixed(1)}%</small>
+          </dd>
+        </div>
+        <div className="metric">
+          <dt>도출 사안</dt>
+          <dd>
+            {rankedSignals.length}
+            <small>개</small>
+          </dd>
+        </div>
+        <div className="metric hl">
+          <dt>주요 사안</dt>
+          <dd>
+            {notable.length}
+            <small>개</small>
+          </dd>
+        </div>
+      </dl>
 
-        <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-stone-200 sm:grid-cols-4 dark:bg-stone-800">
-          {[
-            ["수집 문서", stats.scanned.toLocaleString(), "건"],
-            ["분석 대상", stats.kept.toLocaleString(), "건"],
-            ["도출 사안", String(rankedSignals.length), "개"],
-            ["주요 사안", String(notable.length), "개"],
-          ].map(([k, v, u]) => (
-            <div key={k} className="bg-white p-4 dark:bg-stone-900">
-              <dt className="text-xs text-stone-500 dark:text-stone-400">{k}</dt>
-              <dd className="mt-0.5 font-mono text-xl font-semibold tabular-nums">
-                {v}
-                <span className="ml-0.5 text-xs font-normal text-stone-500">
-                  {u}
-                </span>
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <Trend stats={stats} />
 
-      {/* ── 분야별 총평 ────────────────────────────────────── */}
       {brief && brief.byCategory.length > 0 && (
-        <section className="mb-10">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
-            분야별
-          </h2>
-          <div className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white dark:divide-stone-800 dark:border-stone-800 dark:bg-stone-900">
+        <section className="band">
+          <h2>By category</h2>
+          <p className="band-h">분야별</p>
+          <dl className="cats">
             {brief.byCategory.map((c) => (
-              <div key={c.category} className="flex gap-4 p-4">
-                <span className="w-20 shrink-0 text-sm font-semibold">
-                  {c.category}
-                </span>
-                <span className="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
-                  {c.note}
-                </span>
+              <div className="cat" key={c.category}>
+                <dt>{c.category}</dt>
+                <dd>{c.note}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         </section>
       )}
 
-      {/* ── 사안 전체 (클릭 없이 다 보인다) ──────────────────── */}
-      <section className="mb-10">
-        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
-          주요 사안 {notable.length}건
-        </h2>
-        <p className="mb-4 text-xs text-stone-500 dark:text-stone-400">
+      <section className="band">
+        <h2>Signals</h2>
+        <p className="band-h">주요 사안 {notable.length}건</p>
+        <p className="band-note">
+          여러 부처가 같은 사안의 문서를 동시에 생산한 순으로 정렬했습니다.
           각 항목의 <strong>근거 문서</strong>를 펼치면 원문 링크가 나옵니다.
         </p>
-        <ul className="space-y-3">
-          {notable.map((s) => (
-            <li key={s.id}>
-              <SignalCard s={s} watched={watch.has(s.id)} />
-            </li>
-          ))}
-        </ul>
+
+        {notable.length === 0 ? (
+          <div className="empty">
+            아직 사안이 없습니다.
+            <br />
+            <code>python -m collector.pipeline</code>
+          </div>
+        ) : (
+          <div className="signals">
+            {notable.map((s, i) => (
+              <SignalRow
+                key={s.id}
+                s={s}
+                rank={i + 1}
+                watched={watch.has(s.id)}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {routine.length > 0 && (
-        <section>
-          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
-            일상 행정업무 {routine.length}건
-          </h2>
-          <p className="mb-4 text-xs text-stone-500 dark:text-stone-400">
-            주기적으로 반복되는 정형 업무로 판정된 항목입니다.
+        <section className="band">
+          <h2>Routine</h2>
+          <p className="band-h">일상 행정업무 {routine.length}건</p>
+          <p className="band-note">
+            주기적으로 반복되는 정형 업무로 판정된 항목입니다. 참고용으로만
+            둡니다.
           </p>
-          <ul className="space-y-3">
-            {routine.map((s) => (
-              <li key={s.id}>
-                <SignalCard s={s} dim />
-              </li>
+          <div className="signals">
+            {routine.map((s, i) => (
+              <SignalRow key={s.id} s={s} rank={i + 1} dim />
             ))}
-          </ul>
+          </div>
         </section>
       )}
     </>

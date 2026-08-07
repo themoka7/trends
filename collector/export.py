@@ -90,12 +90,22 @@ def main(argv: list[str] | None = None) -> int:
             "SELECT COUNT(*) days, SUM(scanned) scanned, SUM(kept) kept,"
             " MIN(date) f, MAX(date) t FROM runs"
         ).fetchone()
+        # 일자별 추이 — 화면에서 수집 리듬을 보여준다.
+        # 주말이 확 꺼지는 모양이 그 자체로 정보가 된다.
+        daily = [
+            {"date": d["date"], "scanned": d["scanned"], "kept": d["kept"]}
+            for d in store.conn.execute(
+                "SELECT date, scanned, kept FROM runs ORDER BY date"
+            )
+        ]
+
         stats = {
             "days": s["days"] or 0,
             "scanned": s["scanned"] or 0,
             "kept": s["kept"] or 0,
             "from": s["f"] or "",
             "to": s["t"] or "",
+            "daily": daily,
         }
 
     out = Path(args.out)
