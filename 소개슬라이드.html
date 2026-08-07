@@ -1,0 +1,457 @@
+<title>정책 동향 리포트 — 동작 방식</title>
+
+<style>
+  /* ── 토큰 ────────────────────────────────────────────── */
+  :root {
+    --ink:        #15171c;
+    --ink-2:      #2b303a;
+    --paper:      #e8eaee;
+    --paper-2:    #f2f3f6;
+    --rule:       #c7cbd3;
+    --muted:      #5b6472;
+    --seal:       #a3322b;   /* 인주 — 살아남은 것에만 쓴다 */
+    --seal-soft:  #a3322b1a;
+    --shadow:     0 1px 2px #15171c0f, 0 8px 24px #15171c0a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink:       #e7e9ee;
+      --ink-2:     #b7bdc9;
+      --paper:     #14161a;
+      --paper-2:   #1c1f25;
+      --rule:      #333944;
+      --muted:     #8b93a1;
+      --seal:      #d9705f;
+      --seal-soft: #d9705f1f;
+      --shadow:    0 1px 2px #0006, 0 8px 24px #0004;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e7e9ee; --ink-2: #b7bdc9; --paper: #14161a; --paper-2: #1c1f25;
+    --rule: #333944; --muted: #8b93a1; --seal: #d9705f; --seal-soft: #d9705f1f;
+    --shadow: 0 1px 2px #0006, 0 8px 24px #0004;
+  }
+  :root[data-theme="light"] {
+    --ink: #15171c; --ink-2: #2b303a; --paper: #e8eaee; --paper-2: #f2f3f6;
+    --rule: #c7cbd3; --muted: #5b6472; --seal: #a3322b; --seal-soft: #a3322b1a;
+    --shadow: 0 1px 2px #15171c0f, 0 8px 24px #15171c0a;
+  }
+
+  /* 웹폰트는 CSP에 막히므로 링크하지 않는다. 시스템 스택으로 가되
+     무게·자간·모노 대비로 위계를 만든다. */
+  :root {
+    --mono: "Cascadia Mono", "Consolas", "SFMono-Regular", ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic",
+                 "맑은 고딕", system-ui, sans-serif;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 28px 72px; }
+
+  /* ── 마스트헤드 ──────────────────────────────────────── */
+  .masthead {
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 0 12px;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px;
+  }
+  .masthead h1 {
+    margin: 0; font-size: clamp(21px, 3vw, 27px); font-weight: 800;
+    letter-spacing: -.03em;
+  }
+  .masthead .sub { color: var(--muted); font-size: 14px; }
+  .stamp {
+    margin-left: auto; font-family: var(--mono); font-size: 11px;
+    letter-spacing: .1em; color: var(--seal);
+    border: 1px solid var(--seal); border-radius: 3px;
+    padding: 3px 8px; white-space: nowrap;
+  }
+
+  /* ── 논지 ────────────────────────────────────────────── */
+  .thesis {
+    margin: 34px 0 8px;
+    font-size: clamp(26px, 4.4vw, 40px); font-weight: 800;
+    letter-spacing: -.035em; line-height: 1.28; text-wrap: balance;
+    max-width: 20ch;
+  }
+  .thesis em { font-style: normal; color: var(--seal); }
+  .lede {
+    max-width: 62ch; color: var(--ink-2); font-size: 16px; margin: 0 0 34px;
+  }
+
+  /* ── 공통 섹션 ───────────────────────────────────────── */
+  .band { margin-top: 52px; }
+  .band > h2 {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: .18em; color: var(--muted);
+    margin: 0 0 4px; text-transform: uppercase;
+  }
+  .band > .h { font-size: 20px; font-weight: 700; margin: 0 0 18px;
+               letter-spacing: -.02em; }
+
+  /* ── 깔때기 ──────────────────────────────────────────── */
+  .funnel { display: grid; gap: 3px; }
+  .step {
+    display: grid; grid-template-columns: 92px 1fr; align-items: center;
+    gap: 14px;
+  }
+  .step .lbl {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    text-align: right; letter-spacing: .04em;
+  }
+  .bar {
+    position: relative; height: 46px; border-radius: 2px;
+    background: var(--ink); color: var(--paper);
+    display: flex; align-items: center; padding: 0 14px;
+    min-width: 132px; overflow: hidden;
+    animation: grow .7s cubic-bezier(.22,.9,.3,1) backwards;
+  }
+  .bar.keep { background: var(--seal); color: #fff; }
+  .bar b {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 17px; font-weight: 700; letter-spacing: -.01em;
+  }
+  .bar span { font-size: 12px; opacity: .78; margin-left: 9px; }
+  @keyframes grow { from { transform: scaleX(.04); transform-origin: left; opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
+
+  .drop {
+    grid-column: 2; font-family: var(--mono); font-size: 11px;
+    color: var(--muted); padding: 2px 0 2px 2px;
+  }
+  .drop::before { content: "↓ "; color: var(--seal); }
+
+  .scale-note {
+    margin-top: 12px; font-size: 12px; color: var(--muted);
+    border-left: 2px solid var(--rule); padding-left: 10px;
+  }
+
+  /* ── 파이프라인 ──────────────────────────────────────── */
+  .pipe { display: grid; gap: 10px;
+          grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); }
+  .card {
+    background: var(--paper-2); border: 1px solid var(--rule);
+    border-radius: 5px; padding: 14px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .card .n {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+    color: var(--seal); font-weight: 600;
+  }
+  .card h3 { margin: 0; font-size: 14.5px; font-weight: 700; letter-spacing: -.01em; }
+  .card p { margin: 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.55; }
+  .card .tool {
+    margin-top: auto; padding-top: 8px; border-top: 1px dashed var(--rule);
+    font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+  }
+
+  /* ── 역할 분리 ───────────────────────────────────────── */
+  .split { display: grid; gap: 14px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .split { grid-template-columns: 1fr 1fr; } }
+  .col { border: 1px solid var(--rule); border-radius: 5px; overflow: hidden;
+         background: var(--paper-2); }
+  .col > header {
+    padding: 11px 15px; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: 9px;
+  }
+  .col.ai > header { background: var(--seal-soft); }
+  .col header b { font-size: 14px; }
+  .col header code {
+    font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+    letter-spacing: .04em;
+  }
+  .col ul { margin: 0; padding: 13px 15px 15px 30px; }
+  .col li { font-size: 13px; margin-bottom: 6px; color: var(--ink-2); }
+  .col li::marker { color: var(--seal); }
+  .col li b { color: var(--ink); }
+
+  .rule-note {
+    margin-top: 14px; padding: 13px 15px; border-radius: 5px;
+    background: var(--seal-soft); border: 1px solid var(--seal);
+    font-size: 13.5px; color: var(--ink);
+  }
+  .rule-note b { color: var(--seal); }
+
+  /* ── 루프 다이어그램 ─────────────────────────────────── */
+  .loop { width: 100%; height: auto; overflow-x: auto; }
+  .loop svg { display: block; min-width: 620px; width: 100%; height: auto; }
+  .loop text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+  .loop .box { fill: var(--paper-2); stroke: var(--rule); }
+  .loop .box-t { font-family: inherit; font-size: 12.5px; fill: var(--ink);
+                 font-weight: 700; }
+  .loop .arw { stroke: var(--rule); fill: none; }
+  .loop .accent { stroke: var(--seal); }
+  .loop .accent-f { fill: var(--seal); }
+
+  /* ── 만든 방식 ───────────────────────────────────────── */
+  .built { display: grid; gap: 9px;
+           grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+  .built div {
+    border-left: 2px solid var(--rule); padding: 2px 0 2px 12px;
+  }
+  .built dt {
+    font-family: var(--mono); font-size: 11px; color: var(--seal);
+    letter-spacing: .06em; margin-bottom: 2px;
+  }
+  .built dd { margin: 0; font-size: 13px; color: var(--ink-2); }
+
+  footer {
+    margin-top: 54px; padding-top: 16px; border-top: 1px solid var(--rule);
+    font-size: 12px; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 6px 18px;
+  }
+  footer a { color: var(--seal); text-decoration: none;
+             border-bottom: 1px solid transparent; }
+  footer a:hover, footer a:focus-visible { border-bottom-color: var(--seal); }
+  :focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <h1>정책 동향 리포트</h1>
+    <span class="sub">중앙행정기관 공개문서 자동 분석</span>
+    <span class="stamp">2026.07.31 – 08.06</span>
+  </div>
+
+  <p class="thesis">21만 건을 훑어 <em>80건</em>만 남긴다.</p>
+  <p class="lede">
+    중앙행정기관이 정보공개법에 따라 매일 공개하는 결재문서 목록을 수집해,
+    정형 행정업무를 걷어내고 남은 것을 통계로 묶은 뒤 AI가 해석을 붙입니다.
+    사람이 하루 4만 건을 읽을 수는 없지만, 기계는 읽고 골라낼 수 있습니다.
+  </p>
+
+  <!-- ── 깔때기 ─────────────────────────────────────── -->
+  <section class="band">
+    <h2>Funnel</h2>
+    <p class="h">무엇이 걸러지는가</p>
+
+    <div class="funnel">
+      <div class="step">
+        <span class="lbl">수집</span>
+        <div class="bar" style="width:100%; animation-delay:.05s">
+          <b>216,426</b><span>7일간 훑은 문서 제목</span>
+        </div>
+      </div>
+      <div class="drop">룰 필터 — 근무명령부·지출결의·민원회신 등 정형 문서 제외 · 98.8% 감소</div>
+
+      <div class="step">
+        <span class="lbl">분석 대상</span>
+        <div class="bar" style="width:64%; animation-delay:.18s">
+          <b>2,498</b><span>정책성 문서만</span>
+        </div>
+      </div>
+      <div class="drop">키워드 공유 + 응집도로 묶음</div>
+
+      <div class="step">
+        <span class="lbl">클러스터</span>
+        <div class="bar" style="width:56%; animation-delay:.3s">
+          <b>936</b><span>여러 기관이 공유하는 주제</span>
+        </div>
+      </div>
+      <div class="drop">기관 수 · 응집도 · 희소성으로 순위 → 상위만 AI 해석</div>
+
+      <div class="step">
+        <span class="lbl">발행 사안</span>
+        <div class="bar keep" style="width:36%; animation-delay:.42s">
+          <b>80</b><span>주요 43 · 일상 37</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="scale-note">
+      막대 길이는 로그 스케일입니다. 실제 비율은 <b>2,700 : 1</b> 이라
+      선형으로 그리면 마지막 단계가 보이지 않습니다.
+    </p>
+  </section>
+
+  <!-- ── 파이프라인 ─────────────────────────────────── -->
+  <section class="band">
+    <h2>Pipeline</h2>
+    <p class="h">매일 새벽 2시, 여섯 단계</p>
+
+    <div class="pipe">
+      <article class="card">
+        <span class="n">01</span>
+        <h3>수집</h3>
+        <p>목록 API를 페이지당 200건씩 호출. 3초 간격 · 429 백오프.</p>
+        <span class="tool">Playwright · 브라우저 컨텍스트</span>
+      </article>
+
+      <article class="card">
+        <span class="n">02</span>
+        <h3>정제</h3>
+        <p>응답에 담당자 실명이 들어 있어 <b>파싱 즉시 폐기</b>합니다. DB에 저장하지 않습니다.</p>
+        <span class="tool">개인정보보호</span>
+      </article>
+
+      <article class="card">
+        <span class="n">03</span>
+        <h3>룰 필터</h3>
+        <p>기본을 배제로 두고 통과 조건을 명시하는 화이트리스트 방식.</p>
+        <span class="tool">98.8% 제거</span>
+      </article>
+
+      <article class="card">
+        <span class="n">04</span>
+        <h3>클러스터</h3>
+        <p>같은 키워드를 공유하는 문서를 묶고, 제목이 얼마나 닮았는지로 응집도를 잽니다.</p>
+        <span class="tool">통계 — AI 아님</span>
+      </article>
+
+      <article class="card">
+        <span class="n">05</span>
+        <h3>AI 해석</h3>
+        <p>묶음에 이름·맥락·영향 대상을 붙이고 일상 업무인지 판정합니다.</p>
+        <span class="tool">Gemini · 12건씩 묶어 호출</span>
+      </article>
+
+      <article class="card">
+        <span class="n">06</span>
+        <h3>발행</h3>
+        <p>JSON으로 내보내 정적 사이트를 빌드하고 자동 배포합니다.</p>
+        <span class="tool">Next.js · GitHub Pages</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ── 역할 분리 ──────────────────────────────────── -->
+  <section class="band">
+    <h2>Separation of concerns</h2>
+    <p class="h">코드가 사실을 확정하고, AI는 해석만 한다</p>
+
+    <div class="split">
+      <div class="col">
+        <header><b>코드</b><code>signals.py</code></header>
+        <ul>
+          <li>몇 개 <b>기관</b>이 관여했는가</li>
+          <li>며칠에 걸쳐 <b>몇 건</b>인가</li>
+          <li>어떤 단어를 <b>공유</b>하는가</li>
+          <li>평소 대비 <b>몇 배</b>인가</li>
+        </ul>
+      </div>
+      <div class="col ai">
+        <header><b>AI</b><code>summarize.py · brief.py</code></header>
+        <ul>
+          <li>이 묶음을 뭐라고 <b>부를까</b></li>
+          <li>어느 <b>단계</b>로 보이는가</li>
+          <li>누구에게 <b>영향</b>을 주는가</li>
+          <li>정형 업무인가 <b>새 움직임</b>인가</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="rule-note">
+      <b>AI에게 추측시키지 않습니다.</b>
+      제목 하나를 보고 “정부가 X를 추진 중”이라 단정하면 반드시 틀립니다.
+      통계가 먼저 근거를 확정하고, AI는 그 위에서만 말합니다.
+      화면에는 근거 문서의 원문 링크가 항상 함께 붙습니다.
+    </p>
+  </section>
+
+  <!-- ── 자동화 루프 ────────────────────────────────── -->
+  <section class="band">
+    <h2>Automation</h2>
+    <p class="h">사람 손이 닿지 않는 하루 한 바퀴</p>
+
+    <div class="loop">
+      <svg viewBox="0 0 900 176" role="img"
+           aria-label="GitHub Actions가 매일 새벽 수집·분석·배포를 실행하고 결과가 GitHub Pages로 공개되는 순환도">
+        <defs>
+          <marker id="a" viewBox="0 0 8 8" refX="7" refY="4"
+                  markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" class="accent-f"/>
+          </marker>
+        </defs>
+
+        <g>
+          <rect class="box" x="8"   y="42" width="152" height="52" rx="4"/>
+          <rect class="box" x="200" y="42" width="152" height="52" rx="4"/>
+          <rect class="box" x="392" y="42" width="152" height="52" rx="4"/>
+          <rect class="box" x="584" y="42" width="152" height="52" rx="4"/>
+          <rect class="box" x="776" y="42" width="116" height="52" rx="4"/>
+        </g>
+
+        <text class="box-t" x="84"  y="62" text-anchor="middle">Actions</text>
+        <text            x="84"  y="80" text-anchor="middle">매일 02:00 KST</text>
+
+        <text class="box-t" x="276" y="62" text-anchor="middle">수집 · 필터</text>
+        <text            x="276" y="80" text-anchor="middle">open.go.kr</text>
+
+        <text class="box-t" x="468" y="62" text-anchor="middle">클러스터 · AI</text>
+        <text            x="468" y="80" text-anchor="middle">Gemini</text>
+
+        <text class="box-t" x="660" y="62" text-anchor="middle">feed.json</text>
+        <text            x="660" y="80" text-anchor="middle">봇이 커밋</text>
+
+        <text class="box-t" x="834" y="62" text-anchor="middle">Pages</text>
+        <text            x="834" y="80" text-anchor="middle">정적 배포</text>
+
+        <g class="arw accent" stroke-width="1.4" marker-end="url(#a)">
+          <path d="M160 68 H196"/>
+          <path d="M352 68 H388"/>
+          <path d="M544 68 H580"/>
+          <path d="M736 68 H772"/>
+        </g>
+
+        <path class="arw" stroke-width="1.2" stroke-dasharray="4 4"
+              d="M834 94 V140 H84 V96" marker-end="url(#a)"/>
+        <text x="459" y="156" text-anchor="middle">다음 날 다시 — 캐시로 이전 DB를 이어받는다</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ── 만든 방식 ──────────────────────────────────── -->
+  <section class="band">
+    <h2>How it was built</h2>
+    <p class="h">Claude Code로 만든 과정</p>
+
+    <dl class="built">
+      <div>
+        <dt>스킬 · claude-api</dt>
+        <dd>모델 단가와 배치·캐싱 할인 구조를 기억이 아니라 문서로 확인해 비용을 추정.</dd>
+      </div>
+      <div>
+        <dt>브라우저 도구</dt>
+        <dd>순수 HTTP가 <code>code:491</code>로 막히는 것을 확인하고, 실제 페이지
+            컨텍스트에서만 응답한다는 우회 경로를 찾아냄.</dd>
+      </div>
+      <div>
+        <dt>백그라운드 작업</dt>
+        <dd>7일치 수집(약 50분)을 뒤로 돌려두고 그동안 사이트를 병행 개발.</dd>
+      </div>
+      <div>
+        <dt>웹 검색</dt>
+        <dd>Gemini·Turso 무료 한도를 실제로 조회해 설계 전제를 확정.</dd>
+      </div>
+      <div>
+        <dt>서브 에이전트</dt>
+        <dd>쓰지 않았습니다. 단일 세션에서 측정 → 수정 → 재측정을 반복하는 편이
+            빨랐습니다.</dd>
+      </div>
+      <div>
+        <dt>실측 우선</dt>
+        <dd>“1.5초 간격 안정” 판정이 191페이지에서 깨진 뒤로, 소량 테스트 결과를
+            대량에 일반화하지 않음.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <footer>
+    <span>운영비 <b>월 0원</b> — 무료 티어만 사용</span>
+    <span>수집 약 10분 / 일 · AI 5요청 / 일</span>
+    <a href="https://themoka7.github.io/trends/" target="_blank"
+       rel="noopener noreferrer">themoka7.github.io/trends</a>
+    <span>AI 분석은 초안이며 최종 판단은 사람이 합니다.</span>
+  </footer>
+
+</div>
