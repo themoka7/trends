@@ -30,6 +30,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--limit", type=int, default=80)
     p.add_argument("--include-unpublished", action="store_true", default=True,
                    help="파일럿 단계에서는 미검수분도 내보낸다")
+    p.add_argument("--allow-empty", action="store_true",
+                   help="사안이 0건이어도 기존 feed 를 덮어쓴다")
     args = p.parse_args(argv)
 
     with Store(args.db) as store:
@@ -97,6 +99,16 @@ def main(argv: list[str] | None = None) -> int:
         }
 
     out = Path(args.out)
+
+    # ⚠️ 빈 결과로 기존 feed 를 덮어쓰지 않는다.
+    #    CI에서 DB 캐시가 비었을 때 export 가 돌아 좋은 feed.json 을
+    #    0건짜리로 덮어쓴 적이 있다. 사이트가 통째로 비어 보였다.
+    if not signals and out.exists():
+        print(f"⚠️ 사안 0건 — 기존 {out} 를 지키고 종료한다. "
+              f"(강제로 쓰려면 --allow-empty)")
+        if not args.allow_empty:
+            return 1
+
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(
         json.dumps({"brief": brief, "stats": stats, "signals": signals},

@@ -71,10 +71,14 @@ jobs:
           python -m collector.summarize
           python -m collector.brief
 
+      # push 로 돌 때는 수집·분석을 하지 않으므로 DB가 비어 있다.
+      # 그 상태로 export 하면 커밋된 feed.json 을 0건짜리로 덮어쓴다.
       - name: 웹사이트용 JSON 내보내기
+        if: ${{ github.event_name != 'push' }}
         run: python -m collector.export
 
       - name: feed.json 커밋
+        if: ${{ github.event_name != 'push' }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
